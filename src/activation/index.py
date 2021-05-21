@@ -23,40 +23,40 @@ def elu(x: np.ndarray, alpha: float = 0.7) -> np.ndarray:
 
 def softmax(x: np.ndarray) -> np.ndarray:
     es = np.exp(x)
-    return es / np.sum(es)
+    return es / np.sum(es, axis=1, keepdims=True)
 
 
 def stable_softmax(x: np.ndarray) -> np.ndarray:
     es = np.exp(x - np.max(x))
-    return es / np.sum(es)
+    return es / np.sum(es, axis=1, keepdims=True)
 
 
 def distill_softmax(x: np.ndarray, t: int = 2) -> np.ndarray:
     es = np.exp(x / t)
-    return es / np.sum(es)
+    return es / np.sum(es, axis=1, keepdims=True)
 
 
 if __name__ == '__main__':
     import matplotlib.pyplot as plt
-    plt.figure(figsize=[9.6, 5.4])
+    plt.figure(figsize=[9.6, 7.4])
 
     plt.subplot(211)
-    inputs = np.linspace(-10, 10)
-    plt.plot(inputs, 8 + sigmoid(inputs), label='Sigmoid (+8)')
-    plt.plot(inputs, 6 + tanh(inputs), label='Tanh (+6)')
-    plt.plot(inputs, 4 + relu(inputs), label='Relu (+4)')
-    plt.plot(inputs, 2 + leaky_relu(inputs), label='Leaky Relu (+2)')
-    plt.plot(inputs, 0 + elu(inputs), label='Elu (+0)')
+    inputs = np.linspace(-10, 10).reshape(1, -1)
+    plt.plot(inputs[0], 8 + sigmoid(inputs)[0], label='Sigmoid (+8)')
+    plt.plot(inputs[0], 6 + tanh(inputs)[0], label='Tanh (+6)')
+    plt.plot(inputs[0], 4 + relu(inputs)[0], label='Relu (+4)')
+    plt.plot(inputs[0], 2 + leaky_relu(inputs)[0], label='Leaky Relu (+2)')
+    plt.plot(inputs[0], 0 + elu(inputs)[0], label='Elu (+0)')
     plt.grid()
     plt.legend()
     # plt.show()
 
     plt.subplot(212)
-    inputs = np.arange(10)
-    plt.plot(inputs, 1 + softmax(inputs), label='Softmax (+1)')
-    plt.plot(inputs, 2 + stable_softmax(inputs), label='Stable Softmax (+2)')
-    plt.plot(inputs, 3 + distill_softmax(inputs, 2), label='Distill Softmax T=2 (+3)')
-    plt.plot(inputs, 4 + distill_softmax(inputs, 3), label='Distill Softmax T=3 (+4)')
+    inputs = np.arange(10).reshape(1, -1)
+    plt.plot(inputs[0], 1 + softmax(inputs)[0], label='Softmax (+1)')
+    plt.plot(inputs[0], 2 + stable_softmax(inputs)[0], label='Stable Softmax (+2)')
+    plt.plot(inputs[0], 3 + distill_softmax(inputs, 2)[0], label='Distill Softmax T=2 (+3)')
+    plt.plot(inputs[0], 4 + distill_softmax(inputs, 3)[0], label='Distill Softmax T=3 (+4)')
     plt.grid()
     plt.legend()
     plt.show()
