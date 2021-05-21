@@ -24,11 +24,45 @@ def binary_cross_entropy(y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
     return categorical_cross_entropy(y_true, y_pred)
 
 
+def sigmoid(x: np.ndarray) -> np.ndarray:
+    return 1 / (1 + np.exp(-x))
+
+
+def sigmoid_cross_entropy(y_true: np.ndarray, y_pred: np.ndarray, epsilon: float = 1e-6) -> np.ndarray:
+    y_pred = sigmoid(y_pred + epsilon)
+    return binary_cross_entropy(y_true, y_pred)
+
+
+def softmax(x: np.ndarray) -> np.ndarray:
+    es = np.exp(x)
+    return es / np.sum(es, axis=1, keepdims=True)
+
+
+def softmax_cross_entropy(y_true: np.ndarray, y_pred: np.ndarray, epsilon: float = 1e-6) -> np.ndarray:
+    y_pred = softmax(y_pred + epsilon)
+    return binary_cross_entropy(y_true, y_pred)
+
+
 if __name__ == '__main__':
+    from sklearn.preprocessing import OneHotEncoder
+    # 二分类
     t_true = np.random.randint(0, 2, size=(10, 1)).astype(np.float)
-    t_pred = np.random.uniform(0, 1, size=(10, 1)).astype(np.float)
-    t_loss = binary_cross_entropy(t_true, t_pred).reshape(-1, 1)
+    t_pred = np.random.randn(10, 1)
+    t_loss = sigmoid_cross_entropy(t_true, t_pred).reshape(-1, 1)
     print(np.hstack([
         t_true, t_pred, t_loss
     ]))
     print(t_loss.mean())
+
+    # 多分类
+    classification = 3
+    t_true = OneHotEncoder(categories='auto').fit_transform(
+        np.random.randint(0, classification, size=(10, 1))
+    ).toarray()
+    t_pred = np.random.randn(10, classification)
+    t_loss = softmax_cross_entropy(t_true, t_pred).reshape(-1, 1)
+    print(np.hstack([
+        t_true, t_pred, t_loss
+    ]))
+    print(t_loss.mean())
+

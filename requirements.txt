@@ -4,3 +4,5 @@ matplotlib==3.2.2       # 2020.06.18 https://pypi.org/project/matplotlib/#histor
 
 # Flexible and powerful tensor operations for readable and reliable code. Supports numpy, pytorch, tensorflow, and etc.
 einops
+
+scikit-learn==0.21.3    # 2019.07.30 https://pypi.org/project/scikit-learn/#history
