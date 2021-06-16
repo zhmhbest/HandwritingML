@@ -1,10 +1,9 @@
 from abc import abstractmethod
-from base import BaseModule
 import numpy as np
 from numpy import ndarray
 
 
-class LossBase(BaseModule):
+class LossBase:
     def __call__(self, y_true: ndarray, y_pred: ndarray):
         return self.forward(y_true, y_pred)
 

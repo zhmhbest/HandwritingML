@@ -3,10 +3,8 @@ from abc import abstractmethod
 import numpy as np
 from numpy import ndarray
 
-from base import BaseModule
 
-
-class ActivationBase(BaseModule):
+class ActivationBase:
     def __str__(self):
         return "Activation"
 
@@ -133,6 +131,7 @@ if __name__ == '__main__':
     from matplotlib import pyplot as plt
     from matplotlib.axes import Axes
 
+
     def subplot(ax: Axes, x: ndarray, module: ActivationBase):
         ax.plot(inputs, module(x), linestyle='-', label=r"$f(x)$")
         ax.plot(inputs, module.grad(inputs), linestyle='--', label=r"$\dfrac{dy}{dx}$")
@@ -140,6 +139,7 @@ if __name__ == '__main__':
         ax.grid()
         ax.set_title(str(module))
         ax.legend()
+
 
     fig, axs = plt.subplots(2, 3, figsize=[12.8, 2.4])
     inputs = np.linspace(-10, 10).reshape(-1, 1)
