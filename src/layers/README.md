@@ -1,44 +1,6 @@
-# Activation
+# Layer
 
 [TOC]
-
-## Sigmoid
-
-$$
-f(x) = \dfrac{1}{1 + e^{-x}}
-$$
-
-## Tanh
-
-$$
-f(x) = \dfrac{e^{x} - e^{-x}}{e^{x} + e^{-x}}
-$$
-
-## ReLU
-
-$$
-f(x) = \max(x, 0)
-$$
-
-### Leaky ReLU
-
-$$
-f(x) = \begin{cases}
-        x   & x≥0
-    \\  αx  & x<0
-\end{cases}
-$$
-
-### ELU
-
-$$
-f(x) = \begin{cases}
-    x               & x≥0
-    \\  α(e^x-1)    & x<0
-\end{cases}
-$$
-
-- $α$：ELU负值部分在何时饱和。
 
 ## Softmax
 
@@ -56,4 +18,3 @@ $$
     &   \dfrac{e^{a_n}}{\sum_{i=1}^{n}e^{a_i}}
 \end{array}\right]^T
 $$
-

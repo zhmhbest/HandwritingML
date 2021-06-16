@@ -3,3 +3,7 @@
 !/.idea/modules.xml
 /.vscode/
 /*.iml
+
+.trash/
+dump/
+cache/
