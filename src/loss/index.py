@@ -44,14 +44,15 @@ def softmax_cross_entropy(y_true: np.ndarray, y_pred: np.ndarray, epsilon: float
 
 
 if __name__ == '__main__':
+    import pandas as pd
     from sklearn.preprocessing import OneHotEncoder
     # 二分类
     t_true = np.random.randint(0, 2, size=(10, 1)).astype(np.float)
     t_pred = np.random.randn(10, 1)
     t_loss = sigmoid_cross_entropy(t_true, t_pred).reshape(-1, 1)
-    print(np.hstack([
+    print(pd.DataFrame(np.hstack([
         t_true, t_pred, t_loss
-    ]))
+    ])))
     print(t_loss.mean())
 
     # 多分类
@@ -61,8 +62,8 @@ if __name__ == '__main__':
     ).toarray()
     t_pred = np.random.randn(10, classification)
     t_loss = softmax_cross_entropy(t_true, t_pred).reshape(-1, 1)
-    print(np.hstack([
+    print(pd.DataFrame(np.hstack([
         t_true, t_pred, t_loss
-    ]))
+    ])))
     print(t_loss.mean())
 
