@@ -1,15 +1,16 @@
-from abc import ABC, abstractmethod
+from abc import abstractmethod
+
 import numpy as np
 from numpy import ndarray
 
+from base import BaseModule
 
-class ActivationBase(ABC):
-    def __init__(self, **kwargs):
-        super().__init__()
+
+class ActivationBase(BaseModule):
+    def __str__(self):
+        return "Activation"
 
     def __call__(self, x: ndarray):
-        if x.ndim == 1:
-            x = x.reshape(1, -1)
         return self.forward(x)
 
     @abstractmethod
@@ -29,9 +30,6 @@ class ActivationBase(ABC):
 
 
 class Sigmoid(ActivationBase):
-    def __init__(self):
-        super().__init__()
-
     def __str__(self):
         return "Sigmoid"
 
@@ -48,9 +46,6 @@ class Sigmoid(ActivationBase):
 
 
 class Tanh(ActivationBase):
-    def __init__(self):
-        super().__init__()
-
     def __str__(self):
         return "Tanh"
 
@@ -68,9 +63,6 @@ class Tanh(ActivationBase):
 
 
 class ReLU(ActivationBase):
-    def __init__(self):
-        super().__init__()
-
     def __str__(self):
         return "ReLU"
 
@@ -122,9 +114,6 @@ class ELU(ActivationBase):
 
 
 class SoftPlus(ActivationBase):
-    def __init__(self):
-        super().__init__()
-
     def __str__(self):
         return "SoftPlus"
 
