@@ -1,10 +1,15 @@
 from abc import abstractmethod
+from typing import Union
 
 import numpy as np
 from numpy import ndarray
 
 
 class ActivationBase:
+    def __init__(self, **kwargs):
+        # 超参数设置
+        self.hyper_parameters = kwargs
+
     def __str__(self):
         return "Activation"
 
@@ -76,18 +81,18 @@ class ReLU(ActivationBase):
 
 
 class LeakyReLU(ActivationBase):
-    def __init__(self, alpha=0.3):
-        super().__init__()
-        self.alpha = alpha
+    def __init__(self, alpha: float = 0.3):
+        assert isinstance(alpha, float), "Unsupported alpha type"
+        super().__init__(alpha=alpha)
 
     def __str__(self):
-        return f"Leaky ReLU(alpha={self.alpha})"
+        return f"Leaky ReLU(alpha={self.hyper_parameters['alpha']})"
 
     def forward(self, x: ndarray):
-        return np.where(x > 0, x, x * self.alpha)
+        return np.where(x > 0, x, x * self.hyper_parameters['alpha'])
 
     def grad(self, x: ndarray):
-        return np.where(x > 0, 1, self.alpha)
+        return np.where(x > 0, 1, self.hyper_parameters['alpha'])
 
     def grad2(self, x: ndarray):
         return np.zeros_like(x)
@@ -95,20 +100,20 @@ class LeakyReLU(ActivationBase):
 
 class ELU(ActivationBase):
     def __init__(self, alpha=1.0):
-        super().__init__()
-        self.alpha = alpha
+        assert isinstance(alpha, float), "Unsupported alpha type"
+        super().__init__(alpha=alpha)
 
     def __str__(self):
-        return f"ELU(alpha={self.alpha})"
+        return f"ELU(alpha={self.hyper_parameters['alpha']})"
 
     def forward(self, x: ndarray):
-        return np.where(x > 0, x, self.alpha * (np.exp(x) - 1))
+        return np.where(x > 0, x, self.hyper_parameters['alpha'] * (np.exp(x) - 1))
 
     def grad(self, x: ndarray):
-        return np.where(x > 0, 1, self.alpha * np.exp(x))
+        return np.where(x > 0, 1, self.hyper_parameters['alpha'] * np.exp(x))
 
     def grad2(self, x: ndarray):
-        return np.where(x > 0, 0, self.alpha * np.exp(x))
+        return np.where(x > 0, 0, self.hyper_parameters['alpha'] * np.exp(x))
 
 
 class SoftPlus(ActivationBase):
@@ -127,10 +132,42 @@ class SoftPlus(ActivationBase):
         return exp_x / ((1 + exp_x) ** 2)
 
 
+class ActivationInitializer:
+    def __init__(self, name: Union[str, ActivationBase] = None, **kwargs):
+        if name is None:
+            # 默认激活函数
+            self.activation_class = Tanh
+        elif isinstance(name, str):
+            # 字符串
+            activation_initializer_string_names = {
+                'sigmoid': Sigmoid,
+                'tanh': Tanh,
+                'relu': ReLU,
+                'leaky relu': LeakyReLU,
+                'leaky_relu': LeakyReLU,
+                'elu': ELU,
+                'soft plus': SoftPlus,
+                'soft_plus': SoftPlus
+            }
+            name = name.lower()
+            if name not in activation_initializer_string_names.keys():
+                raise ValueError(f"Unrecognized activation: `{name}`")
+            self.activation_class = activation_initializer_string_names[name]
+        elif isinstance(name, ActivationBase):
+            self.activation_class = name
+        else:
+            raise ValueError(f"Unrecognized activation name type")
+        # 保存超参数
+        self.hyper_parameters = kwargs
+
+    def __call__(self) -> ActivationBase:
+        # 创建一个激活函数实列
+        return self.activation_class(**self.hyper_parameters)
+
+
 if __name__ == '__main__':
     from matplotlib import pyplot as plt
     from matplotlib.axes import Axes
-
 
     def subplot(ax: Axes, x: ndarray, module: ActivationBase):
         ax.plot(inputs, module(x), linestyle='-', label=r"$f(x)$")
@@ -140,8 +177,7 @@ if __name__ == '__main__':
         ax.set_title(str(module))
         ax.legend()
 
-
-    fig, axs = plt.subplots(2, 3, figsize=[12.8, 2.4])
+    fig, axs = plt.subplots(2, 3, figsize=[16, 9], dpi=100)
     inputs = np.linspace(-10, 10).reshape(-1, 1)
     subplot(axs[0][0], inputs, Sigmoid())
     subplot(axs[0][1], inputs, Tanh())
@@ -149,4 +185,5 @@ if __name__ == '__main__':
     subplot(axs[1][0], inputs, LeakyReLU())
     subplot(axs[1][1], inputs, ELU())
     subplot(axs[1][2], inputs, SoftPlus())
+    # plt.savefig("./img.png")
     plt.show()
