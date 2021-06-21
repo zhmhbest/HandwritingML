@@ -1,18 +1,15 @@
 from abc import abstractmethod
-
 import numpy as np
-from numpy import ndarray
 
-
-def gaussian_cdf(x: ndarray, mean: ndarray, var: ndarray):
-    """
-    高斯分布概率密度函数
-    `mean` & `var` <= `x`.
-    """
-    from math import erf
-    eps = np.finfo(float).eps  # 很小的非负数，用来防止除数为0
-    x_scaled = (x - mean) / np.sqrt(var + eps)
-    return (1 + erf(x_scaled / np.sqrt(2))) / 2
+# def gaussian_cdf(x: ndarray, mean: ndarray, var: ndarray):
+#     """
+#     高斯分布概率密度函数
+#     `mean` & `var` <= `x`.
+#     """
+#     from math import erf
+#     eps = np.finfo(float).eps  # 很小的非负数，用来防止除数为0
+#     x_scaled = (x - mean) / np.sqrt(var + eps)
+#     return (1 + erf(x_scaled / np.sqrt(2))) / 2
 
 
 class LearningRateScheduler:
