@@ -75,3 +75,27 @@ class ExponentialLearningRateScheduler(LearningRateScheduler):
             cur_stage = np.floor(cur_stage)
         return self['initial_lr'] * self['decay'] ** cur_stage
 
+
+if __name__ == '__main__':
+    from matplotlib import pyplot as plt
+    START_LR = 0.01
+    TEST_LENGTH = 500
+    STAGE_LENGTH = 20
+
+    lrs_c = ConstantLearningRateScheduler(lr=START_LR)
+    plt.plot([lrs_c(i) for i in range(TEST_LENGTH)], label="Constant")
+
+    for j in range(8, 0, -3):
+        decay = j / 10
+
+        lrs_e1 = ExponentialLearningRateScheduler(
+            initial_lr=START_LR, stage_length=STAGE_LENGTH, decay=decay, staircase=False)
+        lrs_e2 = ExponentialLearningRateScheduler(
+            initial_lr=START_LR, stage_length=STAGE_LENGTH, decay=decay, staircase=True)
+
+        plt.plot([lrs_e1(i) for i in range(TEST_LENGTH)], label=f"Exponential(decay={decay})")
+        plt.plot([lrs_e2(i) for i in range(TEST_LENGTH)], label=f"Exponential(decay={decay})")
+
+    plt.grid()
+    plt.legend()
+    plt.show()
