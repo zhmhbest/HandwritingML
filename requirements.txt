@@ -1,8 +1,7 @@
 numpy==1.16.4           # 2019.05.29 https://pypi.org/project/numpy/#history
-pandas==1.0.5           # 2020.06.18 https://pypi.org/project/pandas/#history
+#pandas==1.0.5           # 2020.06.18 https://pypi.org/project/pandas/#history
 matplotlib==3.2.2       # 2020.06.18 https://pypi.org/project/matplotlib/#history
 
 # Flexible and powerful tensor operations for readable and reliable code. Supports numpy, pytorch, tensorflow, and etc.
-einops
-
-scikit-learn==0.21.3    # 2019.07.30 https://pypi.org/project/scikit-learn/#history
+#einops
+#scikit-learn==0.21.3    # 2019.07.30 https://pypi.org/project/scikit-learn/#history

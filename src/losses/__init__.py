@@ -1,22 +1,10 @@
-from abc import abstractmethod
 import numpy as np
 from numpy import ndarray
 
-
-class LossBase:
-    def __call__(self, y_true: ndarray, y_pred: ndarray):
-        return self.loss(y_true, y_pred)
-
-    @abstractmethod
-    def loss(self, y_true: ndarray, y_pred: ndarray):
-        raise NotImplementedError
-
-    # @abstractmethod
-    # def grad(self, y_true: ndarray, y_pred: ndarray, x_input: ndarray, y_grad_fn):
-    #     raise NotImplementedError
+from frame.Loss import Loss
 
 
-class MSELoss(LossBase):
+class MSELoss(Loss):
     def __str__(self):
         return "Mean Square Error"
 
@@ -25,12 +13,12 @@ class MSELoss(LossBase):
         outputs = (y_true - y_pred) ** 2
         return np.mean(outputs)
 
-    # def grad(self, y_true: ndarray, y_pred: ndarray, x: ndarray, y_layer):
-    #     pass
-    #     # return (y_pred - y_true) * y_layer.grad(x) * (2 / len(y_true))
+    def grad(self, y_true: ndarray, y_pred: ndarray, **kwargs) -> ndarray:
+        grad = y_pred - y_true
+        return grad
 
 
-class CrossEntropy(LossBase):
+class CrossEntropy(Loss):
     def __str__(self):
         return "CrossEntropy"
 
@@ -38,8 +26,11 @@ class CrossEntropy(LossBase):
         eps = np.finfo(float).eps
         return -np.sum(y_true * np.log(y_pred + eps), axis=1)
 
-    # def grad(self, y_true: ndarray, y_pred: ndarray, x: ndarray, y_layer):
-    #     pass
+    def grad(self, y_true: ndarray, y_pred: ndarray, **kwargs):
+        # is_binary(y)
+        # is_stochastic(y_pred)
+        grad = y_pred - y_true
+        return grad
 
 
 if __name__ == '__main__':
