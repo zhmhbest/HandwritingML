@@ -83,7 +83,6 @@ class Linear(object):
 class MSELoss(object):
     @staticmethod
     def loss(y_true: ndarray, y_pred: ndarray) -> float:
-        # return 0.5 * np.mean(np.square(y_pred - y_true), axis=-1)
         return 0.5 * np.square(np.linalg.norm(y_pred - y_true, ord=2))
 
     @staticmethod

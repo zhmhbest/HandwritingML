@@ -6,7 +6,7 @@ from numpy import ndarray
 class Layer:
     @abstractmethod
     def __str__(self) -> str:
-        raise NotImplementedError
+        raise NotImplementedError()
 
     def __call__(self, x: ndarray) -> ndarray:
         return self.forward(x)
@@ -14,7 +14,7 @@ class Layer:
     @abstractmethod
     def forward(self, x: ndarray) -> ndarray:
         """前向传播"""
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class FunctionLayer(Layer):
@@ -24,7 +24,7 @@ class FunctionLayer(Layer):
     @abstractmethod
     def grad(self, x: ndarray, **kwargs) -> ndarray:
         """计算梯度"""
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class ActivationLayer(FunctionLayer):
@@ -34,7 +34,7 @@ class ActivationLayer(FunctionLayer):
     @abstractmethod
     def grad2(self, x: ndarray, **kwargs) -> ndarray:
         """计算梯度的梯度"""
-        raise NotImplementedError
+        raise NotImplementedError()
 
 
 class ParameterLayer:
@@ -44,4 +44,4 @@ class ParameterLayer:
     @abstractmethod
     def backward(self, pl_py: ndarray):
         """反向传播"""
-        raise NotImplementedError
+        raise NotImplementedError()
