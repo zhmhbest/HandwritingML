@@ -177,32 +177,34 @@ class HardSigmoid(Activation):
 
 
 if __name__ == '__main__':
-    from matplotlib import pyplot as plt
-    from matplotlib.axes import Axes
+    def main():
+        from matplotlib import pyplot as plt
+        from matplotlib.axes import Axes
 
-    def subplot(ax: Axes, x: ndarray, module: Activation):
-        ax.plot(inputs, module(x), linestyle='-', label=r"$f(x)$")
-        ax.plot(inputs, module.grad(inputs), linestyle='--', label=r"$\dfrac{df}{dx}$")
-        ax.plot(inputs, module.grad2(inputs), linestyle=':', label=r"$\dfrac{d^2f}{dx^2}$")
-        ax.set_xlim(-5, 5)
-        # ax.set_ylim(-0.5, 1.5)
-        ax.grid()
-        ax.set_title(str(module))
-        ax.legend()
+        def subplot(ax: Axes, x: ndarray, module: Activation):
+            ax.plot(inputs, module(x), linestyle='-', label=r"$f(x)$")
+            ax.plot(inputs, module.grad(inputs), linestyle='--', label=r"$\dfrac{df}{dx}$")
+            ax.plot(inputs, module.grad2(inputs), linestyle=':', label=r"$\dfrac{d^2f}{dx^2}$")
+            ax.set_xlim(-5, 5)
+            # ax.set_ylim(-0.5, 1.5)
+            ax.grid()
+            ax.set_title(str(module))
+            ax.legend()
 
-    inputs = np.linspace(-5, 5).reshape(-1, 1)
+        inputs = np.linspace(-5, 5).reshape(-1, 1)
 
-    fig, axs = plt.subplots(2, 5, figsize=[16, 9], dpi=100)
-    subplot(axs[0][0], inputs, Sigmoid())
-    subplot(axs[0][1], inputs, Tanh())
-    subplot(axs[0][2], inputs, ReLU())
-    subplot(axs[0][3], inputs, LeakyReLU())
-    subplot(axs[0][4], inputs, ELU())
-    subplot(axs[1][0], inputs, SoftPlus())
-    subplot(axs[1][1], inputs, Affine())
-    subplot(axs[1][2], inputs, Exponential())
-    subplot(axs[1][3], inputs, SELU())
-    subplot(axs[1][4], inputs, HardSigmoid())
+        fig, axs = plt.subplots(2, 5, figsize=[16, 9], dpi=100)
+        subplot(axs[0][0], inputs, Sigmoid())
+        subplot(axs[0][1], inputs, Tanh())
+        subplot(axs[0][2], inputs, ReLU())
+        subplot(axs[0][3], inputs, LeakyReLU())
+        subplot(axs[0][4], inputs, ELU())
+        subplot(axs[1][0], inputs, SoftPlus())
+        subplot(axs[1][1], inputs, Affine())
+        subplot(axs[1][2], inputs, Exponential())
+        subplot(axs[1][3], inputs, SELU())
+        subplot(axs[1][4], inputs, HardSigmoid())
 
-    # plt.savefig("./img.png")
-    plt.show()
+        # plt.savefig("./img.png")
+        plt.show()
+    main()

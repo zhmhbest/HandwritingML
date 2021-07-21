@@ -1,18 +1,5 @@
-from abc import abstractmethod
 from math import floor
-
-
-class LearningRateScheduler:
-    @abstractmethod
-    def __str__(self) -> str:
-        raise NotImplementedError()
-
-    def __call__(self, step: int) -> float:
-        return self.learning_rate(step)
-
-    @abstractmethod
-    def learning_rate(self, step: int) -> float:
-        raise NotImplementedError()
+from hwml.frame import LearningRateScheduler
 
 
 class ConstantLRS(LearningRateScheduler):

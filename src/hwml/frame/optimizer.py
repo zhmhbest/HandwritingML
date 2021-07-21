@@ -1,7 +1,10 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 from numpy import ndarray
+
+from .scheduler import LearningRateScheduler
+from ..nn.schedulers import ConstantLRS
 
 
 def get_params_io(shape: Tuple[int, ...]) -> Tuple[int, int]:
@@ -78,6 +81,28 @@ _initializers = {
 }
 
 
+class Optimizer:
+    def __init__(self, lr_scheduler: Union[LearningRateScheduler, float]):
+        # 学习率曲线
+        self.lr_scheduler = ConstantLRS(lr_scheduler) if isinstance(lr_scheduler, float) else lr_scheduler
+        # 迭代次数
+        self.num_step: int = 0
+
+    def step(self):
+        self.num_step += 1
+
+    def reset(self):
+        self.num_step = 0
+
+    def update(self, parameter: ndarray, gradient: ndarray) -> ndarray:
+        """
+        :param parameter:  原始参数
+        :param gradient:   参数的梯度
+        :return:           新的参数值
+        """
+        raise NotImplementedError()
+
+
 class Parameter:
     def __init__(self, shape: Tuple[int, ...], initializer: str = "", **kwargs):
         """
@@ -96,32 +121,27 @@ class Parameter:
         # 形状
         self.shape = shape
         # 参数
-        self.param: ndarray = _initializers[initializer](shape, **kwargs)
+        self.parameter: ndarray = _initializers[initializer](shape, **kwargs)
         # 梯度
-        self.grad: ndarray = np.zeros_like(self.param)
+        self.gradient: ndarray = np.zeros_like(self.parameter)
 
     def __call__(self) -> ndarray:
         """前向传播时调用参数"""
-        return self.param
+        return self.parameter
 
     def zero_grad(self):
         """重置梯度"""
-        self.grad = np.zeros_like(self.param)
+        self.gradient = np.zeros_like(self.parameter)
 
     def accumulate_grad(self, grad: ndarray):
         """积累梯度"""
-        self.grad += grad
+        self.gradient += grad
 
-    def update_param(self, fn):
-        """更新参数"""
-        self.param = fn(self.param, self.grad)
+    def update_parameter(self, optimizer: Optimizer):
+        """使用 累计梯度 和 优化器 更新参数"""
+        self.parameter = optimizer.update(self.parameter, self.gradient)
 
-    def update(self, fn):
-        """更新参数 并 重置梯度"""
-        self.update_param(fn)
+    def update(self, optimizer: Optimizer):
+        """更新参数 & 重置梯度"""
+        self.update_parameter(optimizer)
         self.zero_grad()
-
-
-if __name__ == '__main__':
-    p = Parameter((2, 3), "glorot_normal")
-    print(p.param)
