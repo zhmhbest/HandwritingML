@@ -1,4 +1,4 @@
-from typing import Tuple, Union
+from typing import Tuple, Union, Dict
 
 import numpy as np
 from numpy import ndarray
@@ -81,28 +81,6 @@ _initializers = {
 }
 
 
-class Optimizer:
-    def __init__(self, lr_scheduler: Union[LearningRateScheduler, float]):
-        # 学习率曲线
-        self.lr_scheduler = ConstantLRS(lr_scheduler) if isinstance(lr_scheduler, float) else lr_scheduler
-        # 迭代次数
-        self.num_step: int = 0
-
-    def step(self):
-        self.num_step += 1
-
-    def reset(self):
-        self.num_step = 0
-
-    def update(self, parameter: ndarray, gradient: ndarray) -> ndarray:
-        """
-        :param parameter:  原始参数
-        :param gradient:   参数的梯度
-        :return:           新的参数值
-        """
-        raise NotImplementedError()
-
-
 class Parameter:
     def __init__(self, shape: Tuple[int, ...], initializer: str = "", **kwargs):
         """
@@ -124,10 +102,24 @@ class Parameter:
         self.parameter: ndarray = _initializers[initializer](shape, **kwargs)
         # 梯度
         self.gradient: ndarray = np.zeros_like(self.parameter)
+        # 缓存
+        self.cache: Dict[str, Union[ndarray, int, float]] = {}
 
     def __call__(self) -> ndarray:
         """前向传播时调用参数"""
         return self.parameter
+
+    def set_cache(self, key, value: Union[ndarray, int, float]):
+        """设置缓存"""
+        self.cache[key] = value
+
+    def get_cache(self, key: str, value: Union[ndarray, int, float] = None):
+        """获取缓存"""
+        if key in self.cache.keys():
+            return self.cache[key]
+        else:
+            self.cache[key] = value
+            return value
 
     def zero_grad(self):
         """重置梯度"""
@@ -137,11 +129,33 @@ class Parameter:
         """积累梯度"""
         self.gradient += grad
 
-    def update_parameter(self, optimizer: Optimizer):
-        """使用 累计梯度 和 优化器 更新参数"""
-        self.parameter = optimizer.update(self.parameter, self.gradient)
+    def update_parameter(self, deviation: ndarray):
+        """更新参数值"""
+        self.parameter -= deviation
 
-    def update(self, optimizer: Optimizer):
-        """更新参数 & 重置梯度"""
-        self.update_parameter(optimizer)
-        self.zero_grad()
+
+class Optimizer:
+    def __init__(self, lr_scheduler: Union[LearningRateScheduler, float]):
+        # 学习率曲线
+        self.lr_scheduler = ConstantLRS(lr_scheduler) if isinstance(lr_scheduler, float) else lr_scheduler
+        # 迭代次数
+        self.num_step: int = 0
+
+    def step(self):
+        self.num_step += 1
+
+    def reset(self):
+        self.num_step = 0
+
+    def lr(self) -> float:
+        """学习率"""
+        return self.lr_scheduler(self.num_step)
+
+    def update_dict_parameters(self, parameters: Dict[str, Parameter]):
+        """更新参数表中的参数"""
+        for key in parameters:
+            self.update(parameters[key])
+
+    def update(self, parameter: Parameter):
+        """更新参数"""
+        raise NotImplementedError()

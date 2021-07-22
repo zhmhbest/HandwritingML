@@ -1,9 +1,9 @@
 from abc import abstractmethod
-from typing import List, Dict
+from typing import List, Dict, Union
 
 from numpy import ndarray
 
-from hwml.frame import Parameter
+from .optimizer import Parameter, Optimizer
 
 
 class Layer:
@@ -47,7 +47,7 @@ class ParameterLayer(Layer):
 
     def __init__(self):
         # 优化器
-        self.optimizer = None
+        self.optimizer: Union[None, Optimizer] = None
         # 参数列表
         self.parameters: Dict[str, Parameter] = {}
         # 衍生变量列表
@@ -69,13 +69,6 @@ class ParameterLayer(Layer):
         """清空衍生变量记录"""
         for key in self.derivations:
             self.derivations[key].clear()
-
-    def update_parameters(self):
-        """使用累计梯度更新参数"""
-        assert self.optimizer is not None, "Undefined optimizer."
-        for key in self.parameters:
-            parameter: Parameter = self.parameters[key]
-            parameter.update(self.optimizer)
 
     @abstractmethod
     def calc_gradient(self, pl_pz: ndarray, x: ndarray) -> ndarray:
@@ -99,5 +92,6 @@ class ParameterLayer(Layer):
             pl_px_list.append(self.calc_gradient(pl_pz, x))
 
         self.clear_derivations()
-        self.update_parameters()
+        assert self.optimizer is not None, "Undefined optimizer."
+        self.optimizer.update_dict_parameters(self.parameters)
         return pl_px_list
