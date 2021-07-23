@@ -1,6 +1,7 @@
 import numpy as np
 from numpy import ndarray
-from hwml.frame import Loss
+
+from hwml.frame.loss import Loss
 
 
 class MSELoss(Loss):

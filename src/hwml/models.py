@@ -1,6 +1,6 @@
 from numpy import ndarray
 
-from hwml.frame import Model, ParameterLayer
+from hwml.frame.model import Model, ParameterLayer
 
 
 class Sequential(Model):

@@ -2,7 +2,7 @@ from typing import Union
 
 import numpy as np
 
-from hwml.frame import Optimizer, Parameter, LearningRateScheduler
+from hwml.frame.optimizer import Optimizer, Parameter, LearningRateScheduler
 
 
 class RawOptimizer(Optimizer):

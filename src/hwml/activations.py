@@ -1,18 +1,37 @@
+from abc import abstractmethod
+
 import numpy as np
 from numpy import ndarray
-from hwml.frame import ActivationLayer as Activation
+
+from hwml.frame.layer import FunctionLayer
+
+
+class Activation(FunctionLayer):
+    """激活函数"""
+
+    @abstractmethod
+    def grad2(self, x: ndarray, **kwargs) -> ndarray:
+        """计算梯度的梯度"""
+        raise NotImplementedError()
 
 
 class Affine(Activation):
     def __init__(self, slope: float = 1.0, intercept: float = 0.0):
+        super().__init__()
         self.slope = slope
         self.intercept = intercept
 
     def __str__(self) -> str:
         return f"{Affine.__name__}(slope={self.slope}, intercept={self.intercept})"
 
-    def forward(self, x: ndarray) -> ndarray:
-        return self.slope * x + self.intercept
+    @staticmethod
+    def __fn__(x: ndarray, slope: float, intercept: float) -> ndarray:
+        return slope * x + intercept
+
+    def fn(self, x: ndarray) -> ndarray:
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+        return self.__fn__(x, self.slope, self.intercept)
 
     def grad(self, x: ndarray, **kwargs) -> ndarray:
         return self.slope * np.ones_like(x)
@@ -22,35 +41,67 @@ class Affine(Activation):
 
 
 class Sigmoid(Activation):
+    def __init__(self):
+        super().__init__()
+        self.define_derivation("F")
+
     def __str__(self) -> str:
         return Sigmoid.__name__
 
-    def forward(self, x: ndarray) -> ndarray:
+    @staticmethod
+    def __fn__(x: ndarray) -> ndarray:
         return 1 / (1 + np.exp(-x))
 
+    def fn(self, x: ndarray) -> ndarray:
+        f = self.__fn__(x)
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+            self.derivations['F'].append(f)
+        return f
+
+    def calc_gradients(self, pl_pz: ndarray, x: ndarray, index: int) -> ndarray:
+        f = self.derivations['F'][index]
+        return pl_pz * self.grad(x, f=f)
+
     def grad(self, x: ndarray, **kwargs) -> ndarray:
-        f = kwargs['f'] if 'f' in kwargs else self.forward(x)
+        f = kwargs['f'] if 'f' in kwargs else self.__fn__(x)
         return f * (1 - f)
 
     def grad2(self, x: ndarray, **kwargs) -> ndarray:
-        f = kwargs['f'] if 'f' in kwargs else self.forward(x)
+        f = kwargs['f'] if 'f' in kwargs else self.__fn__(x)
         return f * (1 - f) * (1 - 2 * f)
 
 
 class Tanh(Activation):
+    def __init__(self):
+        super().__init__()
+        self.define_derivation("F")
+
     def __str__(self) -> str:
         return Tanh.__name__
 
-    def forward(self, x: ndarray) -> ndarray:
+    @staticmethod
+    def __fn__(x: ndarray) -> ndarray:
         # return (np.exp(x) - np.exp(-x)) / (np.exp(x) + np.exp(-x))
         return np.tanh(x)
 
+    def fn(self, x: ndarray) -> ndarray:
+        f = self.__fn__(x)
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+            self.derivations['F'].append(f)
+        return f
+
+    def calc_gradients(self, pl_pz: ndarray, x: ndarray, index: int) -> ndarray:
+        f = self.derivations['F'][index]
+        return pl_pz * self.grad(x, f=f)
+
     def grad(self, x: ndarray, **kwargs) -> ndarray:
-        f = kwargs['f'] if 'f' in kwargs else self.forward(x)
+        f = kwargs['f'] if 'f' in kwargs else self.__fn__(x)
         return 1 - f ** 2
 
     def grad2(self, x: ndarray, **kwargs) -> ndarray:
-        f = kwargs['f'] if 'f' in kwargs else self.forward(x)
+        f = kwargs['f'] if 'f' in kwargs else self.__fn__(x)
         return 2 * (f ** 3 - f)
 
 
@@ -58,9 +109,15 @@ class ReLU(Activation):
     def __str__(self) -> str:
         return ReLU.__name__
 
-    def forward(self, x: ndarray) -> ndarray:
+    @staticmethod
+    def __fn__(x: ndarray) -> ndarray:
         # return np.clip(x, 0, np.inf)
         return np.maximum(x, 0)
+
+    def fn(self, x: ndarray) -> ndarray:
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+        return self.__fn__(x)
 
     def grad(self, x: ndarray, **kwargs) -> ndarray:
         return np.where(x > 0, 1, 0)
@@ -71,6 +128,7 @@ class ReLU(Activation):
 
 class LeakyReLU(Activation):
     def __init__(self, alpha: float = 0.3):
+        super().__init__()
         if isinstance(alpha, str):
             alpha = float(alpha)
         assert isinstance(alpha, float), "Unrecognized alpha type"
@@ -79,8 +137,14 @@ class LeakyReLU(Activation):
     def __str__(self) -> str:
         return f"{LeakyReLU.__name__}(alpha={self.alpha})"
 
-    def forward(self, x: ndarray) -> ndarray:
-        return np.where(x > 0, x, x * self.alpha)
+    @staticmethod
+    def __fn__(x: ndarray, alpha: float) -> ndarray:
+        return np.where(x > 0, x, x * alpha)
+
+    def fn(self, x: ndarray) -> ndarray:
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+        return self.__fn__(x, self.alpha)
 
     def grad(self, x: ndarray, **kwargs) -> ndarray:
         return np.where(x > 0, 1, self.alpha)
@@ -91,6 +155,7 @@ class LeakyReLU(Activation):
 
 class ELU(Activation):
     def __init__(self, alpha: float = 1.0):
+        super().__init__()
         if isinstance(alpha, str):
             alpha = float(alpha)
         assert isinstance(alpha, float), "Unrecognized alpha type"
@@ -99,8 +164,14 @@ class ELU(Activation):
     def __str__(self) -> str:
         return f"{ELU.__name__}(alpha={self.alpha})"
 
-    def forward(self, x: ndarray) -> ndarray:
-        return np.where(x > 0, x, self.alpha * (np.exp(x) - 1))
+    @staticmethod
+    def __fn__(x: ndarray, alpha: float) -> ndarray:
+        return np.where(x > 0, x, alpha * (np.exp(x) - 1))
+
+    def fn(self, x: ndarray) -> ndarray:
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+        return self.__fn__(x, self.alpha)
 
     def grad(self, x: ndarray, **kwargs) -> ndarray:
         return np.where(x > 0, 1, self.alpha * np.exp(x))
@@ -113,22 +184,34 @@ class Exponential(Activation):
     def __str__(self) -> str:
         return Exponential.__name__
 
-    def forward(self, x: ndarray) -> ndarray:
+    @staticmethod
+    def __fn__(x: ndarray) -> ndarray:
         return np.exp(x)
+
+    def fn(self, x: ndarray) -> ndarray:
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+        return self.__fn__(x)
 
     def grad(self, x: ndarray, **kwargs) -> ndarray:
-        return np.exp(x)
+        return self.__fn__(x)
 
     def grad2(self, x: ndarray, **kwargs) -> ndarray:
-        return np.exp(x)
+        return self.__fn__(x)
 
 
 class SoftPlus(Activation):
     def __str__(self) -> str:
         return SoftPlus.__name__
 
-    def forward(self, x: ndarray) -> ndarray:
+    @staticmethod
+    def __fn__(x: ndarray) -> ndarray:
         return np.log(1 + np.exp(x))
+
+    def fn(self, x: ndarray) -> ndarray:
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+        return self.__fn__(x)
 
     def grad(self, x: ndarray, **kwargs) -> ndarray:
         ex = kwargs['ex'] if 'ex' in kwargs else np.exp(x)
@@ -141,6 +224,7 @@ class SoftPlus(Activation):
 
 class SELU(Activation):
     def __init__(self):
+        super().__init__()
         self.alpha = 1.6732632423543772848170429916717
         self.scale = 1.0507009873554804934193349852946
         self.elu = ELU(alpha=self.alpha)
@@ -148,8 +232,14 @@ class SELU(Activation):
     def __str__(self) -> str:
         return SELU.__name__
 
-    def forward(self, x: ndarray) -> ndarray:
-        return self.scale * self.elu.forward(x)
+    @staticmethod
+    def __fn__(x: ndarray, scale: float, elu: ELU) -> ndarray:
+        return scale * elu.fn(x)
+
+    def fn(self, x: ndarray) -> ndarray:
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+        return self.__fn__(x, self.scale, self.elu)
 
     def grad(self, x: ndarray, **kwargs) -> ndarray:
         return np.where(
@@ -166,8 +256,14 @@ class HardSigmoid(Activation):
     def __str__(self) -> str:
         return HardSigmoid.__name__
 
-    def forward(self, x: ndarray) -> ndarray:
+    @staticmethod
+    def __fn__(x: ndarray) -> ndarray:
         return np.clip((0.2 * x) + 0.5, 0.0, 1.0)
+
+    def fn(self, x: ndarray) -> ndarray:
+        if self.retain_derived:
+            self.derivations['X'].append(x)
+        return self.__fn__(x)
 
     def grad(self, x: ndarray, **kwargs) -> ndarray:
         return np.where((x >= -2.5) & (x <= 2.5), 0.2, 0)

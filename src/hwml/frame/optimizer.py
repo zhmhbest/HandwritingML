@@ -4,7 +4,7 @@ import numpy as np
 from numpy import ndarray
 
 from .scheduler import LearningRateScheduler
-from ..nn.schedulers import ConstantLRS
+from hwml.schedulers import ConstantLRS
 
 
 def get_params_io(shape: Tuple[int, ...]) -> Tuple[int, int]:

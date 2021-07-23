@@ -1,5 +1,6 @@
 from math import floor
-from hwml.frame import LearningRateScheduler
+
+from hwml.frame.scheduler import LearningRateScheduler
 
 
 class ConstantLRS(LearningRateScheduler):

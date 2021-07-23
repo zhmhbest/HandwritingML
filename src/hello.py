@@ -1,6 +1,6 @@
 import numpy as np
 
-from hwml.nn import Linear, MSELoss, Sequential, Adam
+from hwml.nn import Linear, MSELoss, Sequential, Adam, Sigmoid, Tanh
 
 BATCH_SIZE = 6
 
@@ -14,9 +14,9 @@ y_test = x_test @ __w__
 model = Sequential()
 
 model.add(Linear(2, 3))
+model.add(Tanh())
 model.add(Linear(3, 1))
-# model.set_optimizer(RawOptimizer(0.001))
-# model.set_optimizer(SGD(0.001, momentum=0.1))
+model.add(Sigmoid())
 model.set_optimizer(Adam(0.001))
 model.set_loss(MSELoss())
 
